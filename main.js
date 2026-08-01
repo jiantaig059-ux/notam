@@ -401,7 +401,7 @@ function extractPolygons(raw) {
   // 改行を消して1行に
   let oneline = raw.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ");
 
-  // ★ 中国 NOTAM 対応：BACK TO START. で強制分割
+  // BACK TO START 対応
   oneline = oneline.replace(/BACK TO START\.?/gi, "BACK TO START.|");
 
   // 1. 2. 3. ... で分割
@@ -410,7 +410,6 @@ function extractPolygons(raw) {
   const polygons = [];
 
   blocks.forEach(block => {
-    // ★ BACK TO START. でさらに分割
     let subBlocks = block.split("|");
 
     subBlocks.forEach(sub => {
@@ -429,14 +428,12 @@ function extractPolygons(raw) {
       const reCn = /N(\d{6})E(\d{7})/g;
       let c;
       while ((c = reCn.exec(sub)) !== null) {
-        const lat = c[1]; // 360500
-        const lon = c[2]; // 1120000
-
+        const lat = c[1];
+        const lon = c[2];
         const latHH = lat.slice(0, 2);
         const latMM = lat.slice(2, 4);
         const lonHHH = lon.slice(0, 3);
         const lonMM = lon.slice(3, 5);
-
         const pt = `${latHH}${latMM}N${lonHHH}${lonMM}E`;
         coords.push(pt);
       }
@@ -444,9 +441,10 @@ function extractPolygons(raw) {
       // 十進法に変換
       const poly = coords.map(pt => parsePointNoSec(pt)).filter(p => p !== null);
 
-      if (poly.length > 0) {
-        // ポリゴンを閉じる
-        if (poly.length >= 3) poly.push(poly[0]);
+      // ★★★ 中心線だけ描画する簡易版 ★★★
+      // → ポリゴンを閉じない
+      // → poly.length >= 2 ならラインとして採用
+      if (poly.length >= 2) {
         polygons.push(poly);
       }
     });
