@@ -291,7 +291,7 @@ function renderNotamList() {
     div.className = "notam-title";
     div.textContent = `${idx + 1}. ${n.notam_id || ""} ${n.body?.slice(0, 40) || ""}`;
 
-    // 🔵 リストクリック → detailEl（固定パネル）更新
+    // 🔵 左クリック → 詳細表示
     div.onclick = () => {
       detailEl.innerHTML = detailDataHtml(n);
       hideFloatingDetail();
@@ -302,11 +302,28 @@ function renderNotamList() {
       }
     };
 
-    // 🔴 リスト右クリック → NOTAM削除
+    // 🔴 PC: 右クリック → 削除
     div.oncontextmenu = (e) => {
       e.preventDefault();
       deleteNotam(n);
     };
+
+    // 📱 スマホ: 長押し → 削除
+    let pressTimer = null;
+
+    div.addEventListener("touchstart", (e) => {
+      pressTimer = setTimeout(() => {
+        deleteNotam(n);
+      }, 600); // 600ms 長押しで削除
+    });
+
+    div.addEventListener("touchend", (e) => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("touchmove", (e) => {
+      clearTimeout(pressTimer); // スクロール中は削除しない
+    });
 
     notamListEl.appendChild(div);
 
