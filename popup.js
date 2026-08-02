@@ -38,27 +38,33 @@ function createNotamPopup(notam, coordinate) {
     popup.remove();
   });
 
-  // ドラッグ移動
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
+  // ===============================
+  // PCのみドラッグ移動を有効化
+  // ===============================
+  const isPC = !("ontouchstart" in window);
 
-  popup.querySelector(".popup-header").addEventListener("mousedown", (e) => {
-    isDragging = true;
-    const rect = popup.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    e.preventDefault();
-  });
+  if (isPC) {
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
 
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    const pixel = [e.clientX - offsetX, e.clientY - offsetY];
-    const coord = map.getCoordinateFromPixel(pixel);
-    if (coord) overlay.setPosition(coord);
-  });
+    popup.querySelector(".popup-header").addEventListener("mousedown", (e) => {
+      isDragging = true;
+      const rect = popup.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      e.preventDefault();
+    });
 
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const pixel = [e.clientX - offsetX, e.clientY - offsetY];
+      const coord = map.getCoordinateFromPixel(pixel);
+      if (coord) overlay.setPosition(coord);
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+  }
 }
