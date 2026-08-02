@@ -204,82 +204,52 @@ pre { white-space: pre-wrap; }
    ============================ */
 @media (max-width: 768px) {
 
-  /* 全体を縦レイアウトに */
   body {
-    flex-direction: column;
-    overflow: hidden;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
-  /* 地図は画面上 1/3 */
   #map {
-    height: 33vh;
-    width: 100%;
-    flex: none;
+    height: 33vh !important;
+    width: 100% !important;
+    flex: none !important;
   }
 
-  /* サイドバーは画面下 2/3 */
   #sidebar {
-    width: 100%;
-    height: 67vh;
-    display: flex;
-    flex-direction: row;   /* ← 横並びにする */
-    border-left: none;
-    border-top: 1px solid #ccc;
-    overflow: hidden;
+    width: 100% !important;
+    height: 67vh !important;
+    display: flex !important;
+    flex-direction: row !important;
+    border-left: none !important;
+    border-top: 1px solid #ccc !important;
+    overflow: hidden !important;
   }
 
-  /* 3分割の共通設定 */
   #firList,
   #notamList,
   #detail {
-    flex: 1;               /* ← 3つを均等幅にする */
-    height: 100%;
-    overflow-y: auto;
-    border-right: 1px solid #ccc;
+    flex: 1 !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    border-right: 1px solid #ccc !important;
   }
 
-  /* 最後の列だけ右線を消す */
   #detail {
-    border-right: none;
+    border-right: none !important;
   }
 
-  /* タップしやすくする */
   .fir-item,
   .notam-title {
-    font-size: 15px;
-    padding: 10px;
+    font-size: 15px !important;
+    padding: 10px !important;
   }
 
-  /* 仕切りは不要なので非表示 */
   .divider {
-    display: none;
+    display: none !important;
   }
 
-  /* ポップアップが画面外に行かないように */
   .ol-popup {
-    max-width: 90vw;
+    max-width: 90vw !important;
     left: 5vw !important;
   }
 }
-.popup-close-btn {
-  background: none;
-  border: none;
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-  padding: 0 6px;
-  margin-left: 8px;
-}
-
-.popup-close-btn:active {
-  opacity: 0.6;
-}
-
-@media (max-width: 768px) {
-  .popup-close-btn {
-    font-size: 28px;
-    padding: 4px 10px;
-  }
-}
-
