@@ -132,7 +132,7 @@ pre {
 /* ============================
    スマホ専用レイアウト
    ============================ */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
 
   body {
     flex-direction: column !important;
