@@ -261,3 +261,25 @@ pre { white-space: pre-wrap; }
     left: 5vw !important;
   }
 }
+.popup-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  padding: 0 6px;
+  margin-left: 8px;
+}
+
+.popup-close-btn:active {
+  opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .popup-close-btn {
+    font-size: 28px;
+    padding: 4px 10px;
+  }
+}
+
