@@ -140,14 +140,14 @@ pre {
   }
 
   #map {
-    height: 33vh !important;
+    height: 70vh !important;
     width: 100% !important;
     flex: none !important;
   }
 
   #sidebar {
     width: 100% !important;
-    height: 67vh !important;
+    height: 30vh !important;
     display: flex !important;
     flex-direction: row !important;
     border-left: none !important;
