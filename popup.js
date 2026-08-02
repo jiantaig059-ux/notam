@@ -38,9 +38,7 @@ function createNotamPopup(notam, coordinate) {
     popup.remove();
   });
 
-  // ===============================
   // PCのみドラッグ移動を有効化
-  // ===============================
   const isPC = !("ontouchstart" in window);
 
   if (isPC) {
@@ -49,6 +47,9 @@ function createNotamPopup(notam, coordinate) {
     let offsetY = 0;
 
     popup.querySelector(".popup-header").addEventListener("mousedown", (e) => {
+      // ボタンを掴んだときはドラッグしない
+      if (e.target.closest(".popup-close-btn")) return;
+
       isDragging = true;
       const rect = popup.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
