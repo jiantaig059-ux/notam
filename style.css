@@ -1,5 +1,14 @@
-body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
-#map { flex: 1; }
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font-family: system-ui;
+}
+
+#map {
+  flex: 1;
+}
+
 #sidebar {
   width: 500px;
   background: #f0f0f0;
@@ -7,6 +16,7 @@ body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
   display: flex;
   flex-direction: column;
 }
+
 #firList {
   padding: 3px;
   border-bottom: 1px solid #ccc;
@@ -14,6 +24,7 @@ body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
   overflow-y: auto;
   background: #ddd;
 }
+
 .fir-item {
   padding: 4px;
   background: #fff;
@@ -21,14 +32,18 @@ body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
   border-radius: 4px;
   cursor: pointer;
 }
-.fir-item:hover { background: #e0e0e0; }
 
-#notamList { 
+.fir-item:hover {
+  background: #e0e0e0;
+}
+
+#notamList {
   padding: 8px;
   border-bottom: 1px solid #ccc;
-  height: 230px; 
-  overflow-y: auto; 
+  height: 230px;
+  overflow-y: auto;
 }
+
 .notam-title {
   padding: 6px;
   background: #fff;
@@ -38,7 +53,10 @@ body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
   font-size: 13px;
   border-left: 4px solid #888;
 }
-.notam-title:hover { background: #e0e0e0; }
+
+.notam-title:hover {
+  background: #e0e0e0;
+}
 
 #detail {
   padding: 12px;
@@ -49,7 +67,10 @@ body { margin: 0; display: flex; height: 100vh; font-family: system-ui; }
   font-size: 15px;
   line-height: 1.6;
 }
-pre { white-space: pre-wrap; }
+
+pre {
+  white-space: pre-wrap;
+}
 
 .divider {
   height: 6px;
@@ -59,117 +80,13 @@ pre { white-space: pre-wrap; }
   z-index: 10;
 }
 
-.notam-detail-icon {
-  pointer-events: auto;
-}
-
-.notam-popup {
-  font-family: system-ui;
-  font-size: 12px;
-  max-width: 280px;
-  min-width: 250px;
-}
-
-.notam-popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #333;
-  color: white;
-  padding: 8px 12px;
-  font-weight: bold;
-  margin: -12px -12px 12px -12px;
-}
-
-.notam-popup-header span {
-  flex: 1;
-}
-
-.notam-close-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 8px;
-}
-
-.notam-close-btn:hover {
-  color: #ccc;
-}
-
-.notam-popup-body {
-  padding: 0;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.notam-popup-body h3 {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-}
-
-.notam-popup-body pre {
-  font-size: 11px;
-  line-height: 1.4;
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.notam-delete-btn {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 11px;
-  margin-top: 8px;
-}
-
-.notam-delete-btn:hover {
-  background: #c82333;
-}
-
-.map-detail-panel {
-  position: absolute;
-  width: 350px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 6px;
-  z-index: 9999;
-  box-shadow: 0 0 10px #000;
-}
-
-.map-detail-header {
-  background: #333;
-  padding: 6px;
-  cursor: move;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.map-detail-close {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.map-detail-body {
-  padding: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
+/* ============================
+   独自ポップアップ（createNotamPopup）
+   ============================ */
 .ol-popup {
   position: absolute;
   background: rgba(255, 255, 255, 0.92);
-  color: #000000;
+  color: #000;
   padding: 12px;
   border-radius: 6px;
   border: 1px solid #444;
@@ -179,28 +96,41 @@ pre { white-space: pre-wrap; }
   overflow-y: auto;
   box-shadow: 0 0 10px #000;
   z-index: 9999;
-  display: none;
+  display: none; /* JSでblockにする */
 }
 
-.ol-popup-closer {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-  color: #fff;
-  text-decoration: none;
-  font-size: 20px;
-}
-
+/* ヘッダー（ドラッグ可能） */
 .popup-header {
   cursor: move;
   user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
+/* pointer-events: none を削除 → ボタンがクリック可能に */
 .popup-header * {
-  pointer-events: none;
+  pointer-events: auto;
 }
+
+/* 閉じるボタン */
+.popup-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  padding: 0 6px;
+  margin-left: 8px;
+}
+
+.popup-close-btn:active {
+  opacity: 0.6;
+}
+
 /* ============================
-   📱 スマホ専用レイアウト（幅 768px 以下）
+   スマホ専用レイアウト
    ============================ */
 @media (max-width: 768px) {
 
@@ -251,5 +181,10 @@ pre { white-space: pre-wrap; }
   .ol-popup {
     max-width: 90vw !important;
     left: 5vw !important;
+  }
+
+  .popup-close-btn {
+    font-size: 28px !important;
+    padding: 4px 10px !important;
   }
 }
