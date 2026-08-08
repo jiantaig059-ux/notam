@@ -155,17 +155,20 @@ pre {
     overflow: hidden !important;
   }
 
-  #firList,
-  #notamList,
-  #detail {
-    flex: 1 !important;
-    height: 100% !important;
+  /* ★ 3分割の幅を変更する */
+  #firList {
+    flex: 0 0 20% !important;
     overflow-y: auto !important;
-    border-right: 1px solid #ccc !important;
+  }
+
+  #notamList {
+    flex: 0 0 45% !important;
+    overflow-y: auto !important;
   }
 
   #detail {
-    border-right: none !important;
+    flex: 0 0 35% !important;
+    overflow-y: auto !important;
   }
 
   .fir-item,
@@ -188,3 +191,5 @@ pre {
     padding: 4px 10px !important;
   }
 }
+
+    
