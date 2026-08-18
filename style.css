@@ -135,6 +135,7 @@ pre {
 @media (max-width: 480px) {
 
   body {
+    position: relative !important;
     flex-direction: column !important;
     overflow: hidden !important;
   }
@@ -145,9 +146,76 @@ pre {
     flex: none !important;
   }
 
-  #sidebar,
-  #mobileMenuButton {
+  #sidebar {
+    position: absolute !important;
+    right: 12% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: min(74vw, 310px) !important;
+    height: 46vh !important;
     display: none !important;
+    flex-direction: row !important;
+    border: 1px solid #ccc !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+    overflow: hidden !important;
+    background: #f0f0f0 !important;
+    z-index: 20 !important;
+  }
+
+  #sidebar.mobile-open {
+    display: flex !important;
+  }
+
+  #firList {
+    flex: 0 0 32% !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+
+  #notamList {
+    flex: 1 1 68% !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+
+  #detail {
+    display: none !important;
+  }
+
+  .divider {
+    display: none !important;
+  }
+
+  #mobileMenuButton {
+    position: absolute !important;
+    right: 18% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 52px !important;
+    height: 52px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: rgba(31, 94, 255, 0.96) !important;
+    color: #fff !important;
+    font-size: 28px !important;
+    line-height: 1 !important;
+    box-shadow: 0 6px 18px rgba(31,94,255,0.35) !important;
+    z-index: 30 !important;
+    display: block !important;
+    cursor: pointer !important;
+  }
+
+  .fir-item,
+  .notam-title {
+    font-size: 15px !important;
+    padding: 10px !important;
   }
 
   .ol-popup {
