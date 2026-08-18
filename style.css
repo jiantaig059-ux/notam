@@ -135,46 +135,29 @@ pre {
 @media (max-width: 480px) {
 
   body {
-    position: relative !important;
     flex-direction: column !important;
     overflow: hidden !important;
   }
 
   #map {
-    height: 100vh !important;
+    height: 70vh !important;
     width: 100% !important;
     flex: none !important;
   }
 
   #sidebar {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
     width: 100% !important;
-    height: 52vh !important;
+    height: 30vh !important;
     display: flex !important;
     flex-direction: row !important;
+    border-left: none !important;
     border-top: 1px solid #ccc !important;
-    border-radius: 18px 18px 0 0 !important;
-    box-shadow: 0 -8px 24px rgba(0,0,0,0.2) !important;
     overflow: hidden !important;
-    background: #f0f0f0 !important;
-    transform: translateY(calc(100% + 24px)) !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transition: transform 0.25s ease, opacity 0.25s ease !important;
-    z-index: 20 !important;
   }
 
-  #sidebar.mobile-open {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-
+  /* モバイルでは詳細は非表示、FIR/NOTAMだけ表示 */
   #firList {
-    flex: 0 0 32% !important;
+    flex: 0 0 30% !important;
     min-height: 0 !important;
     min-width: 0 !important;
     overflow-y: auto !important;
@@ -183,7 +166,7 @@ pre {
   }
 
   #notamList {
-    flex: 1 1 68% !important;
+    flex: 1 1 70% !important;
     min-height: 0 !important;
     min-width: 0 !important;
     overflow-y: auto !important;
@@ -195,14 +178,14 @@ pre {
     display: none !important;
   }
 
-  .divider {
-    display: none !important;
-  }
-
   .fir-item,
   .notam-title {
     font-size: 15px !important;
     padding: 10px !important;
+  }
+
+  .divider {
+    display: none !important;
   }
 
   .ol-popup {
