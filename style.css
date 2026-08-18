@@ -155,20 +155,27 @@ pre {
     overflow: hidden !important;
   }
 
-  /* ★ 3分割の幅を変更する */
+  /* モバイルでは詳細は非表示、FIR/NOTAMだけ表示 */
   #firList {
-    flex: 0 0 20% !important;
+    flex: 0 0 30% !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
   }
 
   #notamList {
-    flex: 0 0 45% !important;
+    flex: 1 1 70% !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
   }
 
   #detail {
-    flex: 0 0 35% !important;
-    overflow-y: auto !important;
+    display: none !important;
   }
 
   .fir-item,
