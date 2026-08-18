@@ -402,6 +402,25 @@ map.getViewport().addEventListener("contextmenu", function(evt) {
 document.addEventListener("DOMContentLoaded", () => {
   initFloatingDetail();
 
+  const mobileMenuButton = document.getElementById("mobileMenuButton");
+  const sidebar = document.getElementById("sidebar");
+
+  if (mobileMenuButton && sidebar) {
+    const toggleMobileMenu = () => {
+      const isOpen = sidebar.classList.toggle("mobile-open");
+      sidebar.setAttribute("aria-hidden", String(!isOpen));
+      mobileMenuButton.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    mobileMenuButton.addEventListener("click", toggleMobileMenu);
+
+    sidebar.querySelectorAll(".fir-item").forEach(item => {
+      item.addEventListener("click", () => {
+        toggleMobileMenu();
+      });
+    });
+  }
+
   document.querySelectorAll(".fir-item").forEach(item => {
     item.addEventListener("click", () => {
       loadNotams(item.dataset.fir);
