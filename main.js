@@ -96,18 +96,19 @@ let floatingStartY = 0;
 let floatingStartLeft = 0;
 let floatingStartTop = 0;
 
-function initFloatingDetail() 
+function initFloatingDetail() {
   floatingDetailEl = document.createElement("div");
   floatingDetailEl.id = "floatingDetail";
   floatingDetailEl.innerHTML = `
-
+    <div class="floating-detail-body"></div>
+  `;
   document.body.appendChild(floatingDetailEl);
 
-  floatingDetailEl.querySelector(".floating-detail-close")
-    .addEventListener("click", hideFloatingDetail);
-
-  const header = floatingDetailEl.querySelector(".floating-detail-header");
-  header.addEventListener("mousedown", startFloatingDrag);
+  floatingDetailEl.addEventListener("mousedown", startFloatingDrag);
+  floatingDetailEl.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    hideFloatingDetail();
+  });
 
   document.addEventListener("mousemove", handleFloatingDrag);
   document.addEventListener("mouseup", endFloatingDrag);
@@ -272,6 +273,9 @@ function renderNotamList() {
     div.className = "notam-title";
     div.textContent = `${idx+1}. ${n.notam_id || ""} ${n.body?.slice(0,40) || ""}`;
 
+    const statusColor = getNotamColor(n.raw);
+    div.style.borderLeft = `4px solid ${statusColor}`;
+
     div.onclick = () => {
       detailEl.innerHTML = detailDataHtml(n);
       hideFloatingDetail();
@@ -296,15 +300,33 @@ function renderNotamList() {
 
     notamListEl.appendChild(div);
 
-    drawNotamPolygons(n);
+    drawNotamPolygons(n, currentIcao);
   });
+}
+
+function getNotamStatus(raw) {
+  const text = String(raw || "");
+  if (/DANGER/i.test(text)) return "danger";
+  if (/AIRSPACE\s+CLSD/i.test(text)) return "airspace-clsd";
+  return "normal";
+}
+
+function getNotamColor(raw, isFill = false) {
+  const status = getNotamStatus(raw);
+  if (status === "danger") {
+    return isFill ? "rgba(255, 0, 0, 0.22)" : "#d62828";
+  }
+  if (status === "airspace-clsd") {
+    return isFill ? "rgba(255, 140, 0, 0.28)" : "#f28c28";
+  }
+  return isFill ? "rgba(0, 0, 255, 0.18)" : "#1f5eff";
 }
 
 // ===============================
 //  NOTAM ポリゴン描画
 // ===============================
-function drawNotamPolygons(notam) {
-  const polys = extractPolygons(notam.raw);
+function drawNotamPolygons(notam, firCode = currentIcao) {
+  const polys = extractPolygons(notam.raw, firCode);
 
   notam._features = [];
   notam._polygons = [];
@@ -313,26 +335,31 @@ function drawNotamPolygons(notam) {
     const coords = poly.map(pt => fromLonLatCached(pt[1], pt[0]));
     let geometry;
 
-    const isDanger = /DANGER/i.test(notam.raw || "");
-
     if (poly.length >= 3) {
       geometry = new ol.geom.Polygon([coords]);
-    } else if (poly.length >= 2) {
+    } else if (poly.length === 2) {
       geometry = new ol.geom.LineString(coords);
+    } else if (poly.length === 1) {
+      geometry = new ol.geom.Point(coords[0]);
     }
 
     if (!geometry) return;
 
+    const strokeColor = getNotamColor(notam.raw);
+    const fillColor = getNotamColor(notam.raw, true);
     const feature = new ol.Feature({ geometry, notam });
 
     feature.setStyle(new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: isDanger ? "red" : "blue",
+        color: strokeColor,
         width: 2,
         lineDash: poly.length === 2 ? [6,6] : undefined
       }),
-      fill: poly.length >= 3 ? new ol.style.Fill({
-        color: isDanger ? "rgba(255,0,0,0.2)" : "rgba(0,0,255,0.2)"
+      fill: poly.length >= 3 ? new ol.style.Fill({ color: fillColor }) : undefined,
+      image: poly.length === 1 ? new ol.style.Circle({
+        radius: 6,
+        fill: new ol.style.Fill({ color: fillColor }),
+        stroke: new ol.style.Stroke({ color: strokeColor, width: 2 })
       }) : undefined
     }));
 
@@ -385,11 +412,14 @@ document.addEventListener("DOMContentLoaded", () => {
 // ===============================
 //  座標抽出
 // ===============================
-function extractPolygons(raw) {
+function extractPolygons(raw, firCode = "") {
   if (!raw) return [];
 
-  let oneline = raw.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ");
-  oneline = oneline.replace(/BACK TO START\.?/gi, "BACK TO START.|");
+  const oneline = raw
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/BACK TO START\.?/gi, "BACK TO START.|")
+    .trim();
 
   const blocks = oneline.split(/(?=\b\d{1,2}\. )/g);
   const polygons = [];
@@ -398,29 +428,103 @@ function extractPolygons(raw) {
     const subBlocks = block.split("|");
 
     subBlocks.forEach(sub => {
-      let coords = [];
-
-      const reRu = /(\d{2})(\d{2})(\d{2})N(\d{3})(\d{2})(\d{2})E/g;
-      let m;
-      while ((m = reRu.exec(sub)) !== null) {
-        coords.push(`${m[1]}${m[2]}N${m[4]}${m[5]}E`);
-      }
-
-      const reCn = /N(\d{6})E(\d{7})/g;
-      let c;
-      while ((c = reCn.exec(sub)) !== null) {
-        const lat = c[1];
-        const lon = c[2];
-        coords.push(`${lat.slice(0,2)}${lat.slice(2,4)}N${lon.slice(0,3)}${lon.slice(3,5)}E`);
-      }
-
-      const poly = coords.map(pt => parsePointNoSec(pt)).filter(Boolean);
-
-      if (poly.length >= 2) polygons.push(poly);
+      const points = extractFirCoordinates(sub, firCode);
+      if (points.length >= 1) polygons.push(points);
     });
   });
 
   return polygons;
+}
+
+function extractFirCoordinates(sub, firCode = "") {
+  const fir = String(firCode || "").toUpperCase();
+  const patterns = [];
+
+  if (["UHMM", "UHHH"].includes(fir)) {
+    patterns.push(/(\d{5,6})([NS])(\d{6,7})([EW])/g);
+    patterns.push(/([NS])(\d{5,6})([EW])(\d{6,7})/g);
+  } else if (["ZSHA", "ZBPE"].includes(fir)) {
+    patterns.push(/([NS])(\d{5,6})([EW])(\d{6,7})/g);
+    patterns.push(/(\d{5,6})([NS])(\d{6,7})([EW])/g);
+  } else {// デフォルトパターン
+    patterns.push(/(\d{5,6})([NS])\s*(\d{6,7})([EW])/g);
+    patterns.push(/([NS])(\d{5,6})([EW])(\d{6,7})/g);
+  }
+
+  const points = [];
+
+  patterns.forEach(pattern => {
+    let m;
+    while ((m = pattern.exec(sub)) !== null) {
+      let latValue;
+      let latHem;
+      let lonValue;
+      let lonHem;
+
+      if (m[2] && /[NS]/i.test(m[2])) {
+        latValue = m[1];
+        latHem = m[2];
+        lonValue = m[3];
+        lonHem = m[4];
+      } else {
+        latValue = m[2];
+        latHem = m[1];
+        lonValue = m[4];
+        lonHem = m[3];
+      }
+
+      const point = parseDmsCoordinate(latValue, latHem, lonValue, lonHem);
+      if (point) points.push(point);
+    }
+  });
+
+  const unique = [];
+  points.forEach(point => {
+    const key = `${point[0].toFixed(6)},${point[1].toFixed(6)}`;
+    if (!unique.some(existing => `${existing[0].toFixed(6)},${existing[1].toFixed(6)}` === key)) {
+      unique.push(point);
+    }
+  });
+
+  return unique;
+}
+
+function parseDmsCoordinate(latValue, latHem, lonValue, lonHem) {
+  const lat = parseDms(latValue, latHem);
+  const lon = parseDms(lonValue, lonHem);
+  if (lat == null || lon == null) return null;
+  return [lat, lon];
+}
+
+function parseDms(value, hemisphere) {
+  if (value == null || hemisphere == null) return null;
+
+  const digits = String(value).replace(/\D/g, "");
+  if (!digits) return null;
+
+  const isLat = /[NS]/i.test(hemisphere);
+  const degreeLen = isLat ? 2 : 3;
+
+  let degrees = 0;
+  let minutes = 0;
+  let seconds = 0;
+
+  if (digits.length >= degreeLen + 4) {
+    degrees = Number(digits.slice(0, degreeLen));
+    minutes = Number(digits.slice(degreeLen, degreeLen + 2));
+    seconds = Number(digits.slice(degreeLen + 2, degreeLen + 4));
+  } else if (digits.length >= degreeLen + 2) {
+    degrees = Number(digits.slice(0, degreeLen));
+    minutes = Number(digits.slice(degreeLen, degreeLen + 2));
+  } else if (digits.length >= degreeLen) {
+    degrees = Number(digits.slice(0, degreeLen));
+  } else {
+    return null;
+  }
+
+  let decimal = degrees + minutes / 60 + seconds / 3600;
+  if (hemisphere === "S" || hemisphere === "W") decimal *= -1;
+  return decimal;
 }
 
 function parsePointNoSec(pt) {
