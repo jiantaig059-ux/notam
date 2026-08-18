@@ -49,6 +49,58 @@ document.addEventListener('mouseup', function() {
 });
 
 // ===============================
+//  スマホ用ボトムシート制御
+// ===============================
+const mobileSidebar = document.getElementById('sidebar');
+let mobileTouchStartY = 0;
+let mobileTouchStartX = 0;
+let mobileSwipeOpen = false;
+
+function isMobileLayout() {
+  return window.matchMedia('(max-width: 480px)').matches;
+}
+
+function setMobileSidebarOpen(open) {
+  if (!isMobileLayout()) return;
+  mobileSwipeOpen = open;
+  mobileSidebar.classList.toggle('mobile-open', open);
+}
+
+function setupMobileSidebarSwipe() {
+  const beginMobileSwipe = (event) => {
+    if (!isMobileLayout()) return;
+    const point = event.touches?.[0] || event;
+    mobileTouchStartY = point.clientY;
+    mobileTouchStartX = point.clientX;
+  };
+
+  const endMobileSwipe = (event) => {
+    if (!isMobileLayout()) return;
+    const point = event.changedTouches?.[0] || event;
+    const dy = point.clientY - mobileTouchStartY;
+    const dx = Math.abs(point.clientX - mobileTouchStartX);
+
+    if (dx > 60) return;
+    if (mobileTouchStartY > window.innerHeight * 0.82 && dy < -36) {
+      setMobileSidebarOpen(true);
+    } else if (mobileSwipeOpen && dy > 36) {
+      setMobileSidebarOpen(false);
+    }
+  };
+
+  document.addEventListener('touchstart', beginMobileSwipe, { passive: true });
+  document.addEventListener('touchend', endMobileSwipe, { passive: true });
+  document.addEventListener('pointerdown', beginMobileSwipe, { passive: true });
+  document.addEventListener('pointerup', endMobileSwipe, { passive: true });
+
+  mobileSidebar.addEventListener('click', (e) => {
+    if (!isMobileLayout()) return;
+    if (e.target.closest('.fir-item') || e.target.closest('.notam-title')) return;
+    setMobileSidebarOpen(!mobileSwipeOpen);
+  });
+}
+
+// ===============================
 //  OpenLayers 初期化
 // ===============================
 let notamLayers = [];
@@ -401,9 +453,12 @@ map.getViewport().addEventListener("contextmenu", function(evt) {
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   initFloatingDetail();
+  setupMobileSidebarSwipe();
+  setMobileSidebarOpen(false);
 
   document.querySelectorAll(".fir-item").forEach(item => {
     item.addEventListener("click", () => {
+      setMobileSidebarOpen(true);
       loadNotams(item.dataset.fir);
     });
   });
