@@ -145,17 +145,36 @@ pre {
     flex: none !important;
   }
 
-  #sidebar {
-    width: 100% !important;
-    height: 30vh !important;
-    display: flex !important;
-    flex-direction: row !important;
-    border-left: none !important;
-    border-top: 1px solid #ccc !important;
-    overflow: hidden !important;
+  body {
+    position: relative !important;
   }
 
-  /* モバイルでは詳細は非表示、FIR/NOTAMだけ表示 */
+  #sidebar {
+    position: absolute !important;
+    right: 12px !important;
+    bottom: 72px !important;
+    width: min(86vw, 360px) !important;
+    height: 38vh !important;
+    display: flex !important;
+    flex-direction: row !important;
+    border: 1px solid #ccc !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+    overflow: hidden !important;
+    background: #f0f0f0 !important;
+    transform: translateY(120%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+    z-index: 20 !important;
+  }
+
+  #sidebar.mobile-open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
   #firList {
     flex: 0 0 30% !important;
     min-height: 0 !important;
@@ -186,6 +205,24 @@ pre {
 
   .divider {
     display: none !important;
+  }
+
+  #mobileMenuButton {
+    position: absolute !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    background: #1f5eff !important;
+    color: #fff !important;
+    font-size: 28px !important;
+    line-height: 1 !important;
+    box-shadow: 0 6px 18px rgba(31,94,255,0.35) !important;
+    z-index: 30 !important;
+    display: block !important;
+    cursor: pointer !important;
   }
 
   .ol-popup {
