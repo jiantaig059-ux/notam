@@ -173,6 +173,25 @@ pre {
     pointer-events: auto !important;
   }
 
+  #mobileMenuButton {
+    position: absolute !important;
+    right: 22% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 52px !important;
+    height: 52px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: rgba(31, 94, 255, 0.96) !important;
+    color: #fff !important;
+    font-size: 28px !important;
+    line-height: 1 !important;
+    box-shadow: 0 6px 18px rgba(31,94,255,0.35) !important;
+    z-index: 30 !important;
+    display: block !important;
+    cursor: pointer !important;
+  }
+
   #firList {
     flex: 0 0 32% !important;
     min-height: 0 !important;
