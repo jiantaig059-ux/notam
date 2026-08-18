@@ -100,12 +100,7 @@ function initFloatingDetail() {
   floatingDetailEl = document.createElement("div");
   floatingDetailEl.id = "floatingDetail";
   floatingDetailEl.innerHTML = `
-    <div class="floating-detail-header">
-      <span>NOTAM 詳細</span>
-      <button type="button" class="floating-detail-close">&times;</button>
-    </div>
-    <div class="floating-detail-body"><p>NOTAM を選択してください。</p></div>
-  `;
+
   document.body.appendChild(floatingDetailEl);
 
   floatingDetailEl.querySelector(".floating-detail-close")
