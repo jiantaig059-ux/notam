@@ -96,7 +96,7 @@ let floatingStartY = 0;
 let floatingStartLeft = 0;
 let floatingStartTop = 0;
 
-function initFloatingDetail() {
+function initFloatingDetail() 
   floatingDetailEl = document.createElement("div");
   floatingDetailEl.id = "floatingDetail";
   floatingDetailEl.innerHTML = `
