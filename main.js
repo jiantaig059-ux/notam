@@ -402,22 +402,68 @@ map.getViewport().addEventListener("contextmenu", function(evt) {
 document.addEventListener("DOMContentLoaded", () => {
   initFloatingDetail();
 
-  const mobileMenuButton = document.getElementById("mobileMenuButton");
   const sidebar = document.getElementById("sidebar");
+  const isMobileView = () => window.matchMedia("(max-width: 480px)").matches;
 
-  if (mobileMenuButton && sidebar) {
-    const toggleMobileMenu = () => {
-      const isOpen = sidebar.classList.toggle("mobile-open");
-      sidebar.setAttribute("aria-hidden", String(!isOpen));
-      mobileMenuButton.setAttribute("aria-expanded", String(isOpen));
-    };
+  const setSidebarOpen = (isOpen) => {
+    if (!sidebar) return;
+    sidebar.classList.toggle("mobile-open", isOpen);
+    sidebar.setAttribute("aria-hidden", String(!isOpen));
+  };
 
-    mobileMenuButton.addEventListener("click", toggleMobileMenu);
-
+  if (sidebar) {
     sidebar.querySelectorAll(".fir-item").forEach(item => {
       item.addEventListener("click", () => {
-        toggleMobileMenu();
+        if (isMobileView()) setSidebarOpen(false);
       });
+    });
+
+    let touchStartY = null;
+    let touchStartX = null;
+    let touchStartNearBottom = false;
+
+    document.addEventListener("touchstart", (e) => {
+      if (!isMobileView()) return;
+      if (sidebar.classList.contains("mobile-open") && sidebar.contains(e.target)) return;
+
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartNearBottom = window.innerHeight - touch.clientY <= 80;
+    }, { passive: true });
+
+    document.addEventListener("touchmove", (e) => {
+      if (!isMobileView() || touchStartY === null) return;
+      const touch = e.touches[0];
+      const deltaY = touch.clientY - touchStartY;
+      const deltaX = touch.clientX - touchStartX;
+
+      if (!sidebar.classList.contains("mobile-open") && touchStartNearBottom && deltaY < -30 && Math.abs(deltaX) < 40) {
+        setSidebarOpen(true);
+      }
+      if (sidebar.classList.contains("mobile-open") && touchStartNearBottom && deltaY > 30 && Math.abs(deltaX) < 40) {
+        setSidebarOpen(false);
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchend", () => {
+      touchStartY = null;
+      touchStartX = null;
+      touchStartNearBottom = false;
+    }, { passive: true });
+
+    document.addEventListener("touchcancel", () => {
+      touchStartY = null;
+      touchStartX = null;
+      touchStartNearBottom = false;
+    }, { passive: true });
+
+    document.addEventListener("click", (e) => {
+      if (!isMobileView()) return;
+      if (!sidebar.classList.contains("mobile-open")) return;
+      if (!sidebar.contains(e.target) && e.target !== document.getElementById("mobileMenuButton")) {
+        setSidebarOpen(false);
+      }
     });
   }
 
