@@ -99,7 +99,6 @@ pre {
   display: none; /* JSでblockにする */
 }
 
-/* ヘッダー（ドラッグ可能） */
 .popup-header {
   cursor: move;
   user-select: none;
@@ -108,12 +107,10 @@ pre {
   align-items: center;
 }
 
-/* pointer-events: none を削除 → ボタンがクリック可能に */
 .popup-header * {
   pointer-events: auto;
 }
 
-/* 閉じるボタン */
 .popup-close-btn {
   background: none;
   border: none;
@@ -130,6 +127,15 @@ pre {
 }
 
 /* ============================
+   PC版では firGrid を非表示
+   ============================ */
+@media (min-width: 481px) {
+  #firGrid {
+    display: none !important;
+  }
+}
+
+/* ============================
    スマホ専用レイアウト
    ============================ */
 @media (max-width: 480px) {
@@ -140,7 +146,7 @@ pre {
   }
 
   #map {
-    height: 100vh !important;
+    height: 100dvh !important;
     width: 100% !important;
     flex: none !important;
   }
@@ -151,16 +157,16 @@ pre {
     right: 0 !important;
     bottom: 0 !important;
     width: 100% !important;
-    height: 70vh !important;
-    max-height: 70vh !important;
+    height: 45dvh !important;
+    max-height: 45dvh !important;
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important; 
     border-left: none !important;
     border-top: 1px solid #ccc !important;
     border-radius: 16px 16px 0 0 !important;
     overflow: hidden !important;
     background: #f0f0f0 !important;
-    transform: translateY(calc(100% - 38px)) !important;
+    transform: translateY(calc(100% - 20px)) !important;/* 38px はハンドル部分の高さ */
     transition: transform 0.25s ease !important;
     z-index: 30 !important;
     box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.18) !important;
@@ -181,28 +187,45 @@ pre {
   }
 
   #sidebar.mobile-open {
-    transform: translateY(0) !important;
+    transform: translateY(0) !important;/* ハンドル部分の高さ */
   }
 
-  /* モバイルでは詳細は非表示、FIR/NOTAMだけ表示 */
+  /* ============================
+     モバイル専用：FIR グリッド（横3×2）
+     ============================ */
+  #firGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-auto-rows: minmax(48px, auto) !important;
+    gap: 6px !important;
+    padding: 12px !important;
+    background: #fff !important;
+    border-bottom: 1px solid #ccc !important;
+    max-height: 120px !important; /* 2行固定 */
+    overflow: hidden !important;
+  }
+
+  #firGrid .fir-item {
+    font-size: 15px !important;
+    padding: 10px !important;
+    text-align: center !important;
+    border-radius: 8px !important;
+    background: #f7f7f7 !important;
+  }
+
+  /* PC版の firList はモバイルでは非表示 */
   #firList {
-    flex: 0 0 30% !important;
-    min-height: 0 !important;
-    min-width: 0 !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    padding-top: 26px !important;
+    display: none !important;
   }
 
+  /* NOTAM リスト（縦スクロール） */
   #notamList {
-    flex: 1 1 70% !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    min-width: 0 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    padding-top: 26px !important;
+    padding: 10px !important;
+    background: #fafafa !important;
   }
 
   #detail {
@@ -229,5 +252,3 @@ pre {
     padding: 4px 10px !important;
   }
 }
-
-    

@@ -73,20 +73,37 @@ function setupMobileSidebarSwipe() {
     mobileTouchStartY = point.clientY;
     mobileTouchStartX = point.clientX;
   };
+// 画面下からのスワイプだけ許可する
+function isSwipeFromBottom(startY) {
+  const thresholdPx = 60; // ← ここを調整すれば「もっと下から」にできる
+  return startY > window.innerHeight - thresholdPx;
+}
 
-  const endMobileSwipe = (event) => {
-    if (!isMobileLayout()) return;
-    const point = event.changedTouches?.[0] || event;
-    const dy = point.clientY - mobileTouchStartY;
-    const dx = Math.abs(point.clientX - mobileTouchStartX);
+const endMobileSwipe = (event) => {
+  if (!isMobileLayout()) return;
+  const point = event.changedTouches?.[0] || event;
+  const dy = point.clientY - mobileTouchStartY;
+  const dx = Math.abs(point.clientX - mobileTouchStartX);
 
-    if (dx > 60) return;
-    if (mobileTouchStartY > window.innerHeight * 0.82 && dy < -36) {
-      setMobileSidebarOpen(true);
-    } else if (mobileSwipeOpen && dy > 36) {
-      setMobileSidebarOpen(false);
-    }
-  };
+  // 横移動が大きい場合は無視
+  if (dx > 60) return;
+
+  // ★ 追加：スワイプ開始位置が画面下だけ許可
+  const fromBottom = isSwipeFromBottom(mobileTouchStartY);
+
+  // ★ 開いていない時 → 下からのスワイプだけで開く
+  if (!mobileSwipeOpen && fromBottom && dy < -36) {
+    setMobileSidebarOpen(true);
+    return;
+  }
+
+  // ★ 開いている時 → 上方向のスワイプで閉じる
+  if (mobileSwipeOpen && dy > 36) {
+    setMobileSidebarOpen(false);
+    return;
+  }
+};
+
 
   document.addEventListener('touchstart', beginMobileSwipe, { passive: true });
   document.addEventListener('touchend', endMobileSwipe, { passive: true });
@@ -95,7 +112,7 @@ function setupMobileSidebarSwipe() {
 
   mobileSidebar.addEventListener('click', (e) => {
     if (!isMobileLayout()) return;
-    if (e.target.closest('.fir-item') || e.target.closest('.notam-title')) return;
+    if (e.target.closest('#firGrid') || e.target.closest('.notam-title')) return;
     setMobileSidebarOpen(!mobileSwipeOpen);
   });
 }
