@@ -198,7 +198,7 @@ pre {
     grid-template-columns: repeat(3, 1fr) !important;
     grid-auto-rows: minmax(48px, auto) !important;
     gap: 6px !important;
-    padding: 12px !important;
+    padding: 6px !important;
     background: #fff !important;
     border-bottom: 1px solid #ccc !important;
     max-height: 120px !important; /* 2行固定 */
