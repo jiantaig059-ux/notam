@@ -149,6 +149,124 @@ const vectorSource = new ol.source.Vector();
 const vectorLayer = new ol.layer.Vector({ source: vectorSource });
 map.addLayer(vectorLayer);
 
+const militarySource = new ol.source.Vector();
+const militaryLayer = new ol.layer.Vector({
+  source: militarySource,
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({ color: "#8b4513", width: 2 }),
+    fill: new ol.style.Fill({ color: "rgba(139, 69, 19, 0.22)" }),
+    image: new ol.style.Circle({
+      radius: 6,
+      fill: new ol.style.Fill({ color: "rgba(139, 69, 19, 0.45)" }),
+      stroke: new ol.style.Stroke({ color: "#8b4513", width: 2 })
+    })
+  })
+});
+map.addLayer(militaryLayer);
+
+let militaryRequestId = 0;
+const militaryBaseUrls = {
+  liaoning: "https://www.msa.gov.cn/c8896863b1014c438705536a03eb46ff",
+  shandong: "https://www.msa.gov.cn/36ea3354c8f84953aba082d6d989c750",
+  zhejiang: "https://www.msa.gov.cn/8e10ea74eb9e4c9690f8f891968add80"
+};
+
+function normalizeMilitaryLink(base, href) {
+  if (!href) return null;
+  return new URL(href, `${base}/`).href;
+}
+
+function extractMilitaryMissionText(text) {
+  const mission = text.match(/(?:辽航警|军事任务).*?禁止驶入/s);
+  return mission ? mission[0].trim() : "";
+}
+
+function extractMilitaryGeometry(content) {
+  const pattern = /(\d{1,3})-(\d{1,2}(?:\.\d+)?)([NS])\s+(\d{1,3})-(\d{1,2}(?:\.\d+)?)([EW])/gi;
+  const coordinates = [];
+  let match;
+  while ((match = pattern.exec(content)) !== null) {
+    const latitude = Number(match[1]) + Number(match[2]) / 60;
+    const longitude = Number(match[4]) + Number(match[5]) / 60;
+    coordinates.push([
+      match[6].toUpperCase() === "W" ? -longitude : longitude,
+      match[3].toUpperCase() === "S" ? -latitude : latitude
+    ]);
+  }
+  if (coordinates.length >= 3) {
+    return { type: "Polygon", coordinates: [[...coordinates, coordinates[0]]] };
+  }
+  if (coordinates.length === 2) return { type: "LineString", coordinates };
+  if (coordinates.length === 1) return { type: "Point", coordinates: coordinates[0] };
+  return null;
+}
+
+async function fetchMilitaryList(base, page) {
+  const response = await fetch(`${base}/index_${page}.jhtml`);
+  if (!response.ok) throw new Error(`一覧取得失敗: HTTP ${response.status}`);
+  const document = new DOMParser().parseFromString(await response.text(), "text/html");
+  return Array.from(document.querySelectorAll("li a"))
+    .filter(link => link.textContent.includes("军事"))
+    .map(link => ({
+      title: link.textContent.trim(),
+      url: normalizeMilitaryLink(base, link.getAttribute("href")),
+      date: link.closest("li")?.querySelector(".time")?.textContent.trim() || ""
+    }))
+    .filter(item => item.url);
+}
+
+async function fetchMilitaryDetail(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`詳細取得失敗: HTTP ${response.status}`);
+  const document = new DOMParser().parseFromString(await response.text(), "text/html");
+  const paragraphs = document.querySelectorAll(
+    ".content_wrapper.article-wrap .text p, .article-content p, .TRS_Editor p"
+  );
+  const text = Array.from(paragraphs).map(p => p.textContent.trim()).filter(Boolean).join("\n");
+  return extractMilitaryMissionText(text);
+}
+
+async function scrapeMilitaryMissions(provinces) {
+  const items = [];
+  for (const province of provinces) {
+    const base = militaryBaseUrls[province];
+    for (let page = 1; page <= 5; page++) {
+      items.push(...await fetchMilitaryList(base, page));
+    }
+  }
+  for (const item of items) {
+    item.content = await fetchMilitaryDetail(item.url);
+  }
+  return {
+    type: "FeatureCollection",
+    features: items.map(item => ({
+      type: "Feature",
+      properties: { title: item.title, url: item.url, date: item.date, content: item.content },
+      geometry: extractMilitaryGeometry(item.content)
+    })).filter(feature => feature.geometry)
+  };
+}
+
+async function loadMilitaryMissions(provinces) {
+  const requestId = ++militaryRequestId;
+  militarySource.clear();
+  if (provinces.length === 0) return;
+
+  try {
+    const geojson = await scrapeMilitaryMissions(provinces);
+    if (requestId !== militaryRequestId) return;
+    const features = new ol.format.GeoJSON().readFeatures(geojson, {
+      dataProjection: "EPSG:4326",
+      featureProjection: map.getView().getProjection()
+    });
+    militarySource.addFeatures(features);
+  } catch (error) {
+    if (requestId === militaryRequestId) {
+      console.error("海警局データの取得に失敗しました:", error);
+    }
+  }
+}
+
 // ===============================
 //  NOTAM 詳細（右側パネル）
 // ===============================
@@ -380,15 +498,43 @@ function getNotamStatus(raw) {
   return "normal";
 }
 
+const NOTAM_COLOR_STORAGE_KEY = "notam-map-colors";
+const notamColors = {
+  danger: "#d62828",
+  "airspace-clsd": "#f28c28",
+  normal: "#1f5eff"
+};
+
+function loadNotamColors() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(NOTAM_COLOR_STORAGE_KEY) || "{}");
+    Object.keys(notamColors).forEach(status => {
+      if (/^#[0-9a-f]{6}$/i.test(saved[status])) {
+        notamColors[status] = saved[status];
+      }
+    });
+  } catch (error) {
+    // 保存値が壊れていてもデフォルト色で継続する
+  }
+}
+
+function saveNotamColors() {
+  localStorage.setItem(NOTAM_COLOR_STORAGE_KEY, JSON.stringify(notamColors));
+}
+
+function colorWithOpacity(hex, opacity) {
+  const red = parseInt(hex.slice(1, 3), 16);
+  const green = parseInt(hex.slice(3, 5), 16);
+  const blue = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+}
+
+loadNotamColors();
+
 function getNotamColor(raw, isFill = false) {
   const status = getNotamStatus(raw);
-  if (status === "danger") {
-    return isFill ? "rgba(255, 0, 0, 0.22)" : "#d62828";
-  }
-  if (status === "airspace-clsd") {
-    return isFill ? "rgba(255, 140, 0, 0.28)" : "#f28c28";
-  }
-  return isFill ? "rgba(0, 0, 255, 0.18)" : "#1f5eff";
+  const opacity = status === "danger" ? 0.22 : status === "airspace-clsd" ? 0.28 : 0.18;
+  return isFill ? colorWithOpacity(notamColors[status], opacity) : notamColors[status];
 }
 
 // ===============================
@@ -472,6 +618,62 @@ document.addEventListener("DOMContentLoaded", () => {
   initFloatingDetail();
   setupMobileSidebarSwipe();
   setMobileSidebarOpen(false);
+
+  const settingsButton = document.getElementById("settingsButton");
+  const settingsModal = document.getElementById("settingsModal");
+  const colorInputs = settingsModal.querySelectorAll("[data-notam-color]");
+  const provinceInputs = settingsModal.querySelectorAll("[name=coastGuardProvince]");
+  const provinceStorageKey = "notam-coast-guard-provinces";
+  const savedProvinces = JSON.parse(localStorage.getItem(provinceStorageKey) || "[]");
+  provinceInputs.forEach(input => {
+    input.checked = savedProvinces.includes(input.value);
+  });
+
+  async function scrapeSelectedProvinces() {
+    const provinces = Array.from(provinceInputs)
+      .filter(input => input.checked)
+      .map(input => input.value);
+    localStorage.setItem(provinceStorageKey, JSON.stringify(provinces));
+    await loadMilitaryMissions(provinces);
+  }
+
+  const closeSettings = () => {
+    settingsModal.hidden = true;
+    settingsButton.focus();
+  };
+
+  colorInputs.forEach(input => {
+    const status = input.dataset.notamColor;
+    input.value = notamColors[status];
+    input.addEventListener("input", () => {
+      notamColors[status] = input.value;
+      saveNotamColors();
+      if (currentNotams.length > 0) renderNotamList();
+    });
+  });
+
+  settingsButton.addEventListener("click", () => {
+    settingsModal.hidden = false;
+    settingsModal.querySelector(".settings-close").focus();
+  });
+  document.getElementById("startButton").addEventListener("click", async () => {
+    const startButton = document.getElementById("startButton");
+    startButton.disabled = true;
+    startButton.textContent = "読み込み中…";
+    closeSettings();
+    try {
+      await scrapeSelectedProvinces();
+    } finally {
+      startButton.disabled = false;
+      startButton.textContent = "読み込み開始";
+    }
+  });
+  settingsModal.querySelectorAll("[data-settings-close]").forEach((element) => {
+    element.addEventListener("click", closeSettings);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !settingsModal.hidden) closeSettings();
+  });
 
   document.querySelectorAll(".fir-item").forEach(item => {
     item.addEventListener("click", () => {
@@ -619,3 +821,4 @@ function parsePoint(pt) {
 
   return [lat, lon];
 }
+

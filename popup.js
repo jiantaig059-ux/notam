@@ -13,6 +13,9 @@ function createNotamPopup(notam, coordinate) {
     <div class="popup-body">
       ${detailDataHtml(notam)}
     </div>
+    <div class="popup-footer">
+      <button class="popup-export-btn" type="button">Export</button>
+    </div>
   `;
 
   document.body.appendChild(popup);
@@ -36,6 +39,10 @@ function createNotamPopup(notam, coordinate) {
   popup.querySelector(".popup-close-btn").addEventListener("click", () => {
     map.removeOverlay(overlay);
     popup.remove();
+  });
+
+  popup.querySelector(".popup-export-btn").addEventListener("click", () => {
+    downloadNotamGeoJson(notam);
   });
 
   // PCのみドラッグ移動を有効化
@@ -68,4 +75,46 @@ function createNotamPopup(notam, coordinate) {
       isDragging = false;
     });
   }
+}
+
+function downloadNotamGeoJson(notam) {
+  const polygons = notam._polygons || [];
+  const features = polygons.map((polygon) => {
+    const coordinates = polygon.map(([lat, lon]) => [lon, lat]);
+    let geometry;
+
+    if (coordinates.length >= 3) {
+      geometry = { type: "Polygon", coordinates: [[...coordinates, coordinates[0]]] };
+    } else if (coordinates.length === 2) {
+      geometry = { type: "LineString", coordinates };
+    } else if (coordinates.length === 1) {
+      geometry = { type: "Point", coordinates: coordinates[0] };
+    }
+
+    if (!geometry) return null;
+
+    return {
+      type: "Feature",
+      properties: {
+        notam_id: notam.notam_id || "",
+        effective: notam.effective || null,
+        expiration: notam.expiration || null,
+        raw: notam.raw || ""
+      },
+      geometry
+    };
+  }).filter(Boolean);
+
+  const geojson = {
+    type: "FeatureCollection",
+    features
+  };
+  const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/geo+json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const filename = String(notam.notam_id || "notam").replace(/[^a-z0-9_-]+/gi, "_");
+  link.href = url;
+  link.download = `${filename || "notam"}.geojson`;
+  link.click();
+  URL.revokeObjectURL(url);
 }

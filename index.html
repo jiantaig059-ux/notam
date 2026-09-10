@@ -10,6 +10,43 @@
 </head>
 <body>
   <div id="map"></div>
+  <button id="settingsButton" class="settings-button" type="button" aria-label="設定を開く" title="設定を開く">⚙</button>
+
+  <div id="settingsModal" class="settings-modal" hidden>
+    <div class="settings-backdrop" data-settings-close>   
+    </div>
+    <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-header">
+        <h2 id="settingsTitle">設定</h2>
+        <button class="settings-close" type="button" aria-label="設定を閉じる" title="閉じる" data-settings-close>&times;</button>
+      </div>
+      <h3 class="settings-empty">色設定</h3>
+
+      <div class="settings-color">
+        <label for="dangerColor">TEMPO DANGER:</label>
+        <input type="color" id="dangerColor" name="tempoDangerColor" value="#d62828" data-notam-color="danger">
+      </div>
+      <div class="settings-color">
+        <label for="airspaceClosedColor">AIR SPACE CLSD:</label>
+        <input type="color" id="airspaceClosedColor" name="airSpaceClosedColor" value="#f28c28" data-notam-color="airspace-clsd">
+      </div>
+      <div class="settings-color">
+        <label for="otherColor">OTHER:</label>
+        <input type="color" id="otherColor" name="otherColor" value="#1f5eff" data-notam-color="normal">
+      </div>
+      <h3 class="settings-empty">海警局</h3>
+      <div class="checkbox-container">
+        <input type="checkbox" id="liaoningProvince" name="coastGuardProvince" value="liaoning">
+        <label for="liaoningProvince">辽宁省</label>
+        <input type="checkbox" id="zhejiangProvince" name="coastGuardProvince" value="zhejiang">
+        <label for="zhejiangProvince">浙江省</label>
+        <input type="checkbox" id="shandongProvince" name="coastGuardProvince" value="shandong">
+        <label for="shandongProvince">山东省</label>
+      </div>
+      <button type="button" id="startButton" class="settings-start">読み込み開始</button>
+    </section>
+  </div>
+
   <div id="sidebar">
        <div id="firGrid">
        <div class="fir-item" data-fir="RJJJ">RJJJ </div>
@@ -31,9 +68,10 @@
     <div id="notamList"><p>FIR を選択してください。</p></div>
     <div class="divider" id="divider2"></div>
     <div id="detail"><p>NOTAM 詳細がここに表示されます。</p></div>
-  </div>
+</div>
 
   <script src="main.js"></script>
   <script src="popup.js"></script>
+  <!--<script src="layer.js"></script>-->
 </body>
 </html>

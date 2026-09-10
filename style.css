@@ -9,6 +9,123 @@ body {
   flex: 1;
 }
 
+.settings-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(80, 80, 80, 0.35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #333;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.settings-button:hover,
+.settings-button:focus-visible {
+  background: #fff;
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.settings-modal[hidden] {
+  display: none;
+}
+
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+}
+
+.settings-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.settings-dialog {
+  position: relative;
+  width: min(420px, calc(100vw - 32px));
+  min-height: 180px;
+  padding: 20px;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 12px;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.settings-color-list {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.settings-empty h3 {
+  margin: 28px 0 8px;
+  color: #747070;
+  text-align: center;
+}
+
+.settings-close {
+  border: 0;
+  background: transparent;
+  color: #555;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.settings-close:hover,
+.settings-close:focus-visible {
+  color: #111;
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.settings-empty p{
+  margin: 28px 0 8px;
+  color: #747070;
+  text-align: left;
+}
+
+.settings-start {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 4px;
+  background: #1f5eff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.settings-start:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 #sidebar {
   width: 500px;
   background: #f0f0f0;
@@ -124,6 +241,36 @@ pre {
 
 .popup-close-btn:active {
   opacity: 0.6;
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.popup-export-btn {
+  padding: 5px 10px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+
+.popup-export-btn:hover {
+  background: #eaeaea;
+}
+
+#layerToggle {/* レイヤー切替ボタン */
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255,255,255,0.9);
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 999;
+  font-size: 14px;
 }
 
 /* ============================
